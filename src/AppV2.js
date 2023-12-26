@@ -33,24 +33,25 @@ function formatDay(dateStr) {
 }
 
 class App extends React.Component {
-
-  state = {
-    location: "",
-    isLoading: false,
-    displayLocation: "",
-    weather: {},
-  };
-
-  fetchWeather = async () => { 
-    if(this.state.location.length < 2) return this.setState({weather: {}})
-  try {
+  constructor(props) {
+    super(props);
+    this.state = {
+      location: "damietta",
+      isLoading: false,
+      displayLocation: "",
+      weather: {},
+    };
+    this.fetchWeather = this.fetchWeather.bind(this);
+  }
+  async fetchWeather() {
+    try {
       this.setState({ isLoading: true });
       // 1) Getting location (geocoding)
       const geoRes = await fetch(
         `https://geocoding-api.open-meteo.com/v1/search?name=${this.state.location}`
       );
       const geoData = await geoRes.json();
-      // console.log(geoData);
+      console.log(geoData);
 
       if (!geoData.results) throw new Error("Location not found");
 
@@ -67,22 +68,10 @@ class App extends React.Component {
       const weatherData = await weatherRes.json();
       this.setState({ weather: weatherData.daily });
     } catch (err) {
-      console.error(err);
+      console.err(err);
     } finally {
       this.setState({ isLoading: false });
     }
-  }
-
-  componentDidMount () {
-    // this.fetchWeather()
-    this.setState({location: localStorage.getItem("location") || ""})
-  }
-
-  componentDidUpdate(prevProps, prevState){
-if(this.state.location !== prevState.location){
-  this.fetchWeather()
-  localStorage.setItem("location", this.state.location)
-}
   }
   render() {
     return (
@@ -96,7 +85,7 @@ if(this.state.location !== prevState.location){
             onChange={(e) => this.setState({ location: e.target.value })}
           />
         </div>
-        {/* <button onClick={this.fetchWeather}> Get ewather</button> */}
+        <button onClick={this.fetchWeather}> Get ewather</button>
         {this.state.isLoading && <p className="loader">Loading...</p>}
         {this.state.weather.weathercode && (
           <Weather
@@ -104,7 +93,6 @@ if(this.state.location !== prevState.location){
             location={this.state.displayLocation}
           />
         )}
-        <h2>Regrads, KarimAtif</h2>
       </div>
     );
   }
@@ -112,9 +100,6 @@ if(this.state.location !== prevState.location){
 export default App;
 
 class Weather extends React.Component {
-    componentWillUnmount(){
-console.log("wether will unmount")
-    }
   render() {
     const {
       temperature_2m_max: max,
